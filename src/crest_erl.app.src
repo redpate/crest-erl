@@ -1,0 +1,12 @@
+{application, crest_erl,
+ [
+  {description, "Interface for EVE CREST API"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { crest_erl_app, []}},
+  {env, []}
+ ]}.
