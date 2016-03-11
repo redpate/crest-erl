@@ -15,7 +15,7 @@
 %%%-------------------------------------------------------------------
 -module(crest).
 
--define(AUTH,"Basic "++?AUTH_TOKEN).
+-define(AUTH, "Basic "++?AUTH_TOKEN).
 
 -include("config.hrl").
 
@@ -36,17 +36,17 @@
 %%--------------------------------------------------------------------
 
 auth(Code)-> %% used in page generator process. so let it crash!
-	{ok,{{_,200,_}, _Headers, Body}} = httpc:request(post,
+	{ok, {{_, 200, _}, _Headers, Body}} = httpc:request(post,
 	    {?CREST_AUTH, [{"Authorization" , ?AUTH}],
 	    "application/x-www-form-urlencoded",
-	    list_to_binary(io_lib:format("grant_type=authorization_code&code=~s",[Code]))
+	    list_to_binary(io_lib:format("grant_type=authorization_code&code=~s", [Code]))
 	    }, [], []),
-	PropList = element(1,jiffy:decode(Body)),
+	PropList = element(1, jiffy:decode(Body)),
 	obtain_character_id(#crest{
-			access_token=proplists:get_value(<<"access_token">>,PropList,<<"">>),
-			token_type=proplists:get_value(<<"token_type">>,PropList,<<"">>),
-			expires_in=proplists:get_value(<<"expires_in">>,PropList,300),
-			refresh_token=proplists:get_value(<<"refresh_token">>,PropList,null)}).
+			access_token=proplists:get_value(<<"access_token">>, PropList, <<"">>),
+			token_type=proplists:get_value(<<"token_type">>, PropList, <<"">>),
+			expires_in=proplists:get_value(<<"expires_in">>, PropList, 300),
+			refresh_token=proplists:get_value(<<"refresh_token">>, PropList, null)}).
 
 	%%--------------------------------------------------------------------
 	%% @doc
@@ -56,17 +56,17 @@ auth(Code)-> %% used in page generator process. so let it crash!
 	%% @end
 	%%--------------------------------------------------------------------
 obtain_character_id(#crest{}=Crest)->%% used in page generator process. so let it crash!
-	{ok,{{_,200,_}, _Headers, Body}} = httpc:request(get,
+	{ok, {{_, 200, _}, _Headers, Body}} = httpc:request(get,
 		  {?CREST_AUTH++"/../verify",
 		    [{"Authorization" ,
 		  		io_lib:format("~s ~s", [Crest#crest.token_type, Crest#crest.access_token])
 	    	}]
 	    }, [], []),
-	PropList = element(1,jiffy:decode(Body)),
-	Crest#crest{character_name=proplists:get_value(<<"CharacterName">>,PropList,<<"">>),
-		character_id=proplists:get_value(<<"CharacterID">>,PropList,0),
-		expires_on=proplists:get_value(<<"ExpiresOn">>,PropList,0),
-		owner_hash=proplists:get_value(<<"CharacterOwnerHash">>,PropList,<<"">>)}.
+	PropList = element(1, jiffy:decode(Body)),
+	Crest#crest{character_name=proplists:get_value(<<"CharacterName">>, PropList, <<"">>),
+		character_id=proplists:get_value(<<"CharacterID">>, PropList, 0),
+		expires_on=proplists:get_value(<<"ExpiresOn">>, PropList, 0),
+		owner_hash=proplists:get_value(<<"CharacterOwnerHash">>, PropList, <<"">>)}.
 
 	%%--------------------------------------------------------------------
 	%% @doc
@@ -83,14 +83,14 @@ req(#crest{}=Crest, get, _URL, _)-> % few error to catch. but if there is no con
 	    		io_lib:format("~s ~s", [Crest#crest.token_type, Crest#crest.access_token])
 	    	}]}, [], []),
 	case Res of
-		{ok,{{_,200,_}, _Headers, Body}}->
-			{Crest,jiffy:decode(Body)};
-		{ok,{{_,401,_}, _Headers, _Body}}->
-			req(update_token(Crest),get,URL,[]);
-		{ok,{{_,Code,_}, _Headers, _Body}}->
-			{Crest,{Code,_Body}};
+		{ok, {{_, 200, _}, _Headers, Body}}->
+			{Crest, jiffy:decode(Body)};
+		{ok, {{_, 401, _}, _Headers, _Body}}->
+			req(update_token(Crest), get, URL, []);
+		{ok, {{_, Code, _}, _Headers, _Body}}->
+			{Crest, {Code, _Body}};
 		_->
-			{Crest,{[]}}
+			{Crest, {[]}}
 	end;
 req(#crest{}=Crest, Method, _URL, ReqBody)-> % req to private crst. few error to catch. but if there is no conection etc. - let it crash.
 	URL = lists:flatten(_URL),
@@ -98,10 +98,10 @@ req(#crest{}=Crest, Method, _URL, ReqBody)-> % req to private crst. few error to
 	    {URL,
 	    	[{"Authorization" ,
 	    		io_lib:format("~s ~s", [Crest#crest.token_type, Crest#crest.access_token])
-	    	}], "application/json",ReqBody
+	    	}], "application/json", ReqBody
 	    }, [], []),
 	case Res of
-	{ok,{{_,200,_}, _Headers, Body}}->
+	{ok, {{_, 200, _}, _Headers, Body}}->
 		Result = try jiffy:decode(Body) of
 			Succses->
 				Succses
@@ -109,13 +109,13 @@ req(#crest{}=Crest, Method, _URL, ReqBody)-> % req to private crst. few error to
 			_Error->
 				Body
 		end,
-		{Crest,Result};
-	{ok,{{_,401,_}, _Headers, _Body}}->
-		req(update_token(Crest),Method,URL,ReqBody);
-	{ok,{{_,Code,_}, _Headers, _Body}}->
-		{Crest,{Code,_Body}};
+		{Crest, Result};
+	{ok, {{_, 401, _}, _Headers, _Body}}->
+		req(update_token(Crest), Method, URL, ReqBody);
+	{ok, {{_, Code, _}, _Headers, _Body}}->
+		{Crest, {Code, _Body}};
 	_->
-		{Crest,{[]}}
+		{Crest, {[]}}
 	end.
 
 %%--------------------------------------------------------------------
@@ -125,14 +125,14 @@ req(#crest{}=Crest, Method, _URL, ReqBody)-> % req to private crst. few error to
 %% @spec set_waypoint(#crest{}, Id, Options)-> {#crest{}, Result}
 %% @end
 %%--------------------------------------------------------------------
-set_waypoint(VerifiedRecord,Id,Options)->
-	crest:req(VerifiedRecord,post,io_lib:format("~s/characters/~p/navigation/waypoints/",[?CREST_HOST,VerifiedRecord#crest.character_id]),
+set_waypoint(VerifiedRecord, Id, Options)->
+	crest:req(VerifiedRecord, post, io_lib:format("~s/characters/~p/navigation/waypoints/", [?CREST_HOST, VerifiedRecord#crest.character_id]),
 				jiffy:encode({[{<<"solarSystem">>,
 				 {[{<<"href">>,
-						list_to_binary(io_lib:format("~s/solarsystems/~p/",[?CREST_HOST, Id]))},
-					 {<<"id">>,Id}]}},
-				{<<"first">>,lists:member(<<"first">>,Options)},
-				{<<"clearOtherWaypoints">>,lists:member(<<"clearOtherWaypoints">>,Options)}]})
+						list_to_binary(io_lib:format("~s/solarsystems/~p/", [?CREST_HOST, Id]))},
+					 {<<"id">>, Id}]}},
+				{<<"first">>, lists:member(<<"first">>, Options)},
+				{<<"clearOtherWaypoints">>, lists:member(<<"clearOtherWaypoints">>, Options)}]})
 			).
 
 %%--------------------------------------------------------------------
@@ -143,13 +143,13 @@ set_waypoint(VerifiedRecord,Id,Options)->
 %% @end
 %%--------------------------------------------------------------------
 update_token(#crest{}=Crest)-> %% used in tracker proc. if it is unable to update token - let it crash.
-	{ok,{{_,200,_}, _Headers, Body}} = httpc:request(post,
+	{ok, {{_, 200, _}, _Headers, Body}} = httpc:request(post,
 	    {?CREST_AUTH, [{"Authorization" , ?AUTH}],
 	    "application/x-www-form-urlencoded",
-	    list_to_binary(io_lib:format("grant_type=refresh_token&refresh_token=~s",[Crest#crest.refresh_token]))
+	    list_to_binary(io_lib:format("grant_type=refresh_token&refresh_token=~s", [Crest#crest.refresh_token]))
 	    }, [], []),
 	{PropList} = jiffy:decode(Body),
-	AccessToken=proplists:get_value(<<"access_token">>,PropList,<<"">>),
-	RefreshToken=proplists:get_value(<<"refresh_token">>,PropList,null),
-	ExpiresIn=proplists:get_value(<<"expires_in">>,PropList,300),
+	AccessToken=proplists:get_value(<<"access_token">>, PropList, <<"">>),
+	RefreshToken=proplists:get_value(<<"refresh_token">>, PropList, null),
+	ExpiresIn=proplists:get_value(<<"expires_in">>, PropList, 300),
 	Crest#crest{access_token=AccessToken, expires_in=ExpiresIn, refresh_token=RefreshToken}.

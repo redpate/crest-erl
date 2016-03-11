@@ -21,12 +21,18 @@
 
 -record(event,{id,tags,text,time,system,expire=erlang:monotonic_time(seconds)}).
 
+-define(CREST_VARIABLES, crest_variables).
+-define(REDIS_ETS_NAME, redis_pid).
 %% CREST
 %%-define(CREST_SERVER,"crest-tq.eveonline.com").
 -define(CREST_AUTH, pub_crest:get_variable(<<"authEndpoint">>)).
+-ifndef(PUBLIC_CREST_HOST).
 -define(PUBLIC_CREST_HOST,"https://public-crest.eveonline.com").
+-endif.
 -define(PUBLIC_CREST_HOST_BIN,list_to_binary(?PUBLIC_CREST_HOST)).
+-ifndef(CREST_HOST).
 -define(CREST_HOST,"https://crest-tq.eveonline.com").
--define(REDIRECT_URL,"").
--define(APPLICATION_ID,""). %% client id from https://developers.eveonline.com
--define(AUTH_TOKEN, "=="). %% precompiled  base64:encode(ClientID++":"++SecretKey)
+-endif.
+-define(REDIRECT_URL,?CREST_REDIRECT_URL).
+-define(APPLICATION_ID,?CREST_APPLICATION_ID). %% client id from https://developers.eveonline.com
+-define(AUTH_TOKEN, ?CREST_AUTH_TOKEN). %% precompiled  base64:encode(ClientID++":"++SecretKey)

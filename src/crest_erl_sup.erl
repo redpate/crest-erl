@@ -21,6 +21,4 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, [
-      {crest_cache, {crest_cache, start_link, []}, permanent, brutal_kill, worker, []}
-    ]} }.
+    {ok, { {one_for_one, 5, 10}, []} }.
