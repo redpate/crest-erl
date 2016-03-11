@@ -130,4 +130,6 @@ req_cache(Endpoint)->
 req_cache(Endpoint, Deps)->
   crest_cache:req(Endpoint, Deps).
 req_cache(Endpoint, Deps, ExtractPoint)->
-  crest_cache:req(Endpoint, Deps, ExtractPoint).
+  crest_cache:req(Endpoint, Deps, ExtractPoint, 120).
+req_cache(Endpoint, Deps, ExtractPoint, CacheTime)->
+  crest_cache:req(Endpoint, Deps, ExtractPoint, CacheTime).
