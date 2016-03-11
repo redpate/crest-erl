@@ -26,6 +26,9 @@ init()-> %% init all requered variables
   {ok, Redis} = eredis:start_link(), %% for less then 5k requests per second its pointless to spawn couple of redis workers.
   ets:new(?CREST_VARIABLES, [named_table , {read_concurrency, true}, public, {write_concurrency, true}]), %% shared ets for toring all vaiables used in api
   ets:insert_new(?CREST_VARIABLES, {?REDIS_ETS_NAME, Redis}), %% store redis pid
+  {ok,Proplist}=file:consult("base.conf"),
+  lists:foreach(fun(X)-> ets:insert_new(?CREST_VARIABLES, {X, proplists:get_value(X, Proplist)}) end,
+   [redirect_url, application_id, auth_token]),
   {PropList} = pub_crest:req("/"),
   store_endpoints_href(PropList).
 

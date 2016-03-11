@@ -33,6 +33,6 @@
 -ifndef(CREST_HOST).
 -define(CREST_HOST,"https://crest-tq.eveonline.com").
 -endif.
--define(REDIRECT_URL,?CREST_REDIRECT_URL).
--define(APPLICATION_ID,?CREST_APPLICATION_ID). %% client id from https://developers.eveonline.com
--define(AUTH_TOKEN, ?CREST_AUTH_TOKEN). %% precompiled  base64:encode(ClientID++":"++SecretKey)
+-define(REDIRECT_URL, pub_crest:get_variable(redirect_url)).
+-define(APPLICATION_ID, pub_crest:get_variable(application_id)).%% client id from https://developers.eveonline.com
+-define(AUTH_TOKEN, pub_crest:get_variable(auth_token)). %% precompiled  base64:encode(ClientID++":"++SecretKey)
